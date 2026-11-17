@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#171d31">
+<title>KUBIA Tutor — Tu profesor particular</title>
+<style>
+:root{--ink:#171c2d;--muted:#6c7487;--line:#e8eaf1;--purple:#6957e8;--dark:#171d31;--bg:#f7f8fc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+header{height:68px;background:white;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(4vw,16px)}
+.brand{display:flex;align-items:center;gap:9px;font-size:21px;font-weight:900;letter-spacing:-.8px}.mark{height:34px;width:34px;border-radius:11px;background:var(--purple);color:white;display:grid;place-items:center}
+.brand span{color:var(--purple)}.status{font-size:11px;color:#278064;background:#e5f8f0;border-radius:99px;padding:7px 10px;font-weight:800}
+main{max-width:900px;margin:30px auto;padding:0 16px}.intro{margin-bottom:20px}.intro small{color:var(--purple);font-weight:850;letter-spacing:1px;text-transform:uppercase}.intro h1{font-size:clamp(28px,5vw,42px);letter-spacing:-1.6px;margin:8px 0}.intro p{color:var(--muted);line-height:1.55;margin:0;font-size:14px}
+.chat{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 10px 35px #1c24400a}
+.chathead{padding:16px 19px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:11px}.avatar{width:38px;height:38px;border-radius:12px;background:#eeeaff;color:var(--purple);display:grid;place-items:center;font-weight:900}.chathead b{font-size:14px}.chathead small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.messages{height:min(54vh,520px);min-height:320px;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:13px;background:#fcfcfe}
+.msg{max-width:86%;padding:12px 14px;border-radius:15px;font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.bot{align-self:flex-start;background:#f0efff;border:1px solid #e7e3ff;border-bottom-left-radius:5px}
+.user{align-self:flex-end;background:var(--dark);color:#fff;border-bottom-right-radius:5px}
+.typing{color:var(--muted);font-size:12px;padding:0 20px 12px;display:none}
+.composer{border-top:1px solid var(--line);padding:14px;display:flex;gap:10px;align-items:end;background:white}
+textarea{flex:1;resize:none;min-height:48px;max-height:120px;border:1px solid #dfe2eb;border-radius:13px;padding:13px;font:inherit;font-size:14px;outline:none}
+textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px #6957e81b}
+.send{height:48px;width:50px;border:0;border-radius:13px;background:var(--purple);color:white;font-size:20px;font-weight:900}
+.send:disabled{opacity:.5}.hint{font-size:11px;color:#858da0;padding:0 17px 13px;background:white}
+.suggestions{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0 0}.suggestions button{border:1px solid #e1defb;background:white;color:#5948d0;border-radius:99px;padding:8px 11px;font-size:11px;font-weight:700}
+.disclaimer{margin:14px 3px;color:#858da0;font-size:11px;line-height:1.5}
+@media(max-width:540px){main{margin:20px auto}.messages{height:55vh;min-height:300px;padding:14px}.msg{max-width:93%}.intro p{font-size:13px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="mark">K</div>KUB<span>IA</span></div><div class="status">● Tutor de estudio</div></header>
+<main>
+ <section class="intro"><small>Tu profesor particular con IA</small><h1>¿Qué necesitas aprender hoy?</h1><p>Pregunta sin miedo. KUBIA intenta explicarte las cosas de forma sencilla, con ejemplos y paso a paso.</p></section>
+ <section class="chat">
+  <div class="chathead"><div class="avatar">K</div><div><b>KUBIA Tutor</b><small>Enfocado en el aprendizaje escolar en Chile</small></div></div>
+  <div class="messages" id="messages" aria-live="polite"><div class="msg bot">¡Hola! Soy KUBIA, tu tutor de estudio. 📚\n\n¿Qué ramo estás estudiando y qué tema te gustaría entender? Puedo explicártelo desde cero y practicar contigo.</div></div>
+  <div class="typing" id="typing">KUBIA está pensando…</div>
+  <form class="composer" id="form"><textarea id="prompt" maxlength="3000" placeholder="Escribe tu pregunta…" aria-label="Escribe tu pregunta"></textarea><button class="send" id="send" aria-label="Enviar">➤</button></form>
+  <div class="hint">Enter para enviar · Shift + Enter para nueva línea · No compartas datos personales.</div>
+ </section>
+ <div class="suggestions">
+  <button type="button" data-q="Explícame las fracciones desde cero.">Explícame fracciones</button>
+  <button type="button" data-q="Ayúdame a estudiar para una prueba de matemática de 2° medio.">Preparar una prueba</button>
+  <button type="button" data-q="Hazme 5 preguntas de práctica sobre la materia que te indique.">Practicar</button>
+ </div>
+ <p class="disclaimer">KUBIA es una herramienta de apoyo. Puede equivocarse: revisa los contenidos con tus apuntes y tu profesor. Esta versión de prueba no guarda el historial al recargar la página.</p>
+</main>
+<script>
+const form=document.getElementById('form'), input=document.getElementById('prompt'), messages=document.getElementById('messages'), typing=document.getElementById('typing'), send=document.getElementById('send');
+const history=[];
+function add(text,who){const el=document.createElement('div');el.className='msg '+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;return el}
+async function submitQuestion(q){
+ const message=(q||input.value).trim();if(!message||send.disabled)return;
+ add(message,'user');input.value='';send.disabled=true;typing.style.display='block';
+ try{
+  const response=await fetch('/.netlify/functions/tutor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,history})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||'No pudimos responder. Inténtalo nuevamente.');
+  const answer=data.answer||'No recibimos una respuesta. Inténtalo otra vez.';
+  add(answer,'bot');history.push({role:'user',content:message},{role:'assistant',content:answer});
+  while(history.length>12)history.shift();
+ }catch(err){add('No pude conectarme con el tutor: '+err.message,'bot')}
+ finally{typing.style.display='none';send.disabled=false;input.focus()}
+}
+form.addEventListener('submit',e=>{e.preventDefault();submitQuestion()});
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitQuestion()}});
+document.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>submitQuestion(b.dataset.q)));
+</script>
+</body></html>
